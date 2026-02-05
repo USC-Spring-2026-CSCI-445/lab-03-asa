@@ -41,6 +41,19 @@ class OdometryPublisher:
 
         ######### Your code starts here #########
         # add odometry equations to calculate robot's self.x, self.y, self.theta given encoder values
+        
+        # Integrate yaw
+        self.theta += self.vth * dt
+
+        # Keep theta bounded (optional but nice)
+        self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
+
+        # Body -> world (odom) frame integration
+        dx = (self.vx * math.cos(self.theta) - self.vy * math.sin(self.theta)) * dt
+        dy = (self.vx * math.sin(self.theta) + self.vy * math.cos(self.theta)) * dt
+
+        self.x += dx
+        self.y += dy
 
         ######### Your code ends here #########
         
