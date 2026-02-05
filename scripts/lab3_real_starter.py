@@ -29,9 +29,9 @@ class OdometryPublisher:
 
         ######### Your code starts here #########
         # TurtleBot3 Burger parameters from manual (https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/)
-        self.TICK_TO_RAD =
-        self.wheel_radius =
-        self.wheel_separation =
+        self.TICK_TO_RAD = 0.001533981
+        self.wheel_radius = 0.04
+        self.wheel_separation = 0.13
         ######### Your code ends here #########
 
         self.current_time = rospy.Time.now()
@@ -56,6 +56,17 @@ class OdometryPublisher:
 
         ######### Your code starts here #########
         # add odometry equations to calculate robot's self.x, self.y, self.theta given encoder values
+        self.theta += self.vth * dt
+
+        # Keep theta bounded (optional but nice)
+        self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
+
+        # Body -> world (odom) frame integration
+        dx = (self.vx * math.cos(self.theta) - self.vy * math.sin(self.theta)) * dt
+        dy = (self.vx * math.sin(self.theta) + self.vy * math.cos(self.theta)) * dt
+
+        self.x += dx
+        self.y += dy
 
         ######### Your code ends here #########
 
