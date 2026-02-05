@@ -55,19 +55,23 @@ class OdometryPublisher:
         dt = (self.current_time - self.last_time).to_sec()
 
         ######### Your code starts here #########
-        # add odometry equations to calculate robot's self.x, self.y, self.theta given encoder values
-        self.theta += self.vth * dt
-
-        # Keep theta bounded (optional but nice)
-        self.theta = math.atan2(math.sin(self.theta), math.cos(self.theta))
-
-        # Body -> world (odom) frame integration
-        dx = (self.vx * math.cos(self.theta) - self.vy * math.sin(self.theta)) * dt
-        dy = (self.vx * math.sin(self.theta) + self.vy * math.cos(self.theta)) * dt
-
-        self.x += dx
-        self.y += dy
-
+        delta_left_ticks = self.left_encoder - self.last_left_encoder
+        delta_right_ticks = self.right_encoder - self.last_right_encoder
+        
+        self.last_left_encoder = self.left_encoder
+        self.last_right_encoder = self.right_encoder
+        
+        delta_left_rad = delta_left_ticks * self.TICK_TO_RAD
+        delta_right_rad = delta_right_ticks * self.TICK_TO_RAD
+        delta_left_dist = self.wheel_radius * delta_left_rad
+        delta_right_dist = self.wheel_radius * delta_right_rad
+        
+        delta_s = (delta_right_dist + delta_left_dist) / 2.0
+        delta_theta = (delta_right_dist - delta_left_dist) / self.wheel_separation
+        
+        self.x += delta_s * math.cos(self.theta + delta_theta / 2.0)
+        self.y += delta_s * math.sin(self.theta + delta_theta / 2.0)
+        self.theta += delta_theta
         ######### Your code ends here #########
 
         odom_quat = tf.transformations.quaternion_from_euler(0, 0, self.theta)
